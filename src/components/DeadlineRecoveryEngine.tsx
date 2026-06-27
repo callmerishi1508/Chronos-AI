@@ -363,7 +363,7 @@ export default function DeadlineRecoveryEngine({
   const { risk: simRisk, delay: simDelay, successProb: simSuccessProb } = getSimulatedMetrics();
 
   // Handle schedule commitment
-  const handleApplyAllFocusBlocks = () => {
+  const handleApplyAllFocusBlocks = async () => {
     if (!recoveryData || !onAutoScheduleFocusBlocks) return;
     
     // Use simulated sprints if available, otherwise suggested focus blocks
@@ -371,12 +371,29 @@ export default function DeadlineRecoveryEngine({
       rt.focusBlocks.map((fb) => ({
         title: fb.title,
         durationMinutes: fb.durationMinutes,
-        taskId: rt.taskId
+        taskId: rt.taskId,
+        startOffsetMinutes: fb.startOffsetMinutes,
+        actionPlan: fb.actionPlan
       }))
     );
 
     onAutoScheduleFocusBlocks(blocksToSchedule);
-    setSuccessMessage("🚀 Rescue Focus Sprints successfully injected into your Focus Agenda! Disruption shields activated.");
+
+    try {
+      const res = await fetch("/api/calendar/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ focusBlocks: blocksToSchedule })
+      });
+      if (res.ok) {
+        setSuccessMessage("🚀 Shields activated! Focus Sprints successfully injected into your local agenda AND Google Calendar.");
+      } else {
+        setSuccessMessage("🚀 Rescue Focus Sprints successfully injected into your local Focus Agenda! Disruption shields activated.");
+      }
+    } catch (e) {
+      setSuccessMessage("🚀 Rescue Focus Sprints successfully injected into your local Focus Agenda! Disruption shields activated.");
+    }
+    
     safeSetTimeout(() => setSuccessMessage(null), 5000);
   };
 

@@ -14,7 +14,9 @@ export function useSharedState<T>(key: string, initialValue: T): [T, (value: T |
       channel = new BroadcastChannel("chronos_state_sync");
       handleMessage = (event: MessageEvent) => {
         if (event.data.key === key) {
-          setState(event.data.value);
+          const val = event.data.value;
+          if (Array.isArray(initialValue) && !Array.isArray(val)) return;
+          setState(val);
         }
       };
       channel.addEventListener("message", handleMessage);
@@ -27,6 +29,7 @@ export function useSharedState<T>(key: string, initialValue: T): [T, (value: T |
           const parsed = JSON.parse(event.newValue);
           // Assuming v2 schema { version: 2, data: ... }
           if (parsed.data !== undefined) {
+            if (Array.isArray(initialValue) && !Array.isArray(parsed.data)) return;
             setState(parsed.data);
           }
         } catch(e) {

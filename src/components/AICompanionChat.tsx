@@ -94,6 +94,18 @@ export default function AICompanionChat({
           );
         })}
 
+        {messages.length === 0 && !isLoading && (
+          <div className="flex flex-col items-center justify-center h-full text-center gap-3 opacity-60">
+            <div className="w-12 h-12 rounded-full bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
+              <Bot className="w-6 h-6 text-indigo-400" />
+            </div>
+            <div className="flex flex-col gap-1">
+              <span className="text-xs font-bold text-white uppercase tracking-wider">Awaiting Directives</span>
+              <span className="text-[10px] text-slate-400 font-sans max-w-[200px]">Your AI Companion is standing by to assist with planning and execution.</span>
+            </div>
+          </div>
+        )}
+
         {isLoading && (
           <div className="flex gap-3 max-w-[85%] self-start ai-processing">
             <div className="w-8 h-8 rounded-full border bg-indigo-950 border-indigo-800 text-indigo-300 flex items-center justify-center shrink-0 relative overflow-hidden">

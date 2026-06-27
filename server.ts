@@ -8,6 +8,17 @@ import crypto from "crypto";
 
 import { GoogleGenAI, Type } from "@google/genai";
 import { createServer as createViteServer } from "vite";
+import { google } from "googleapis";
+import session from "express-session";
+import cookieParser from "cookie-parser";
+
+declare module "express-session" {
+  interface SessionData {
+    oauthState?: string;
+    googleTokens?: any;
+    googleProfile?: any;
+  }
+}
 
 import { logger } from "./src/utils/logger";
 import { validateInputPayload, validateAIOutput } from "./src/utils/validator";
@@ -41,6 +52,227 @@ app.use(express.json({ limit: "1mb" }));
 
 // Input Validation
 app.use(validateInputPayload);
+
+// Sessions & Cookies for OAuth
+app.use(cookieParser());
+app.use(session({
+  secret: process.env.SESSION_SECRET || "chronos-demo-secret-key",
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === "production",
+    httpOnly: true,
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    sameSite: "lax"
+  }
+}));
+
+// Google OAuth Client Setup
+const oauth2Client = new google.auth.OAuth2(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+  process.env.GOOGLE_REDIRECT_URI
+);
+
+// Utility to get authenticated calendar client
+function getCalendarClient(tokens: any) {
+  const client = new google.auth.OAuth2(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+    process.env.GOOGLE_REDIRECT_URI
+  );
+  client.setCredentials(tokens);
+  return google.calendar({ version: "v3", auth: client });
+}
+
+
+// -----------------------------------------------------------------------------
+// GOOGLE CALENDAR OAUTH & AGENTIC INTEGRATION ENDPOINTS
+// -----------------------------------------------------------------------------
+
+app.get("/api/auth/google", (req, res) => {
+  if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+    return res.status(500).json({ error: "OAuth not configured on server." });
+  }
+
+  // Generate a secure CSRF state token
+  const state = crypto.randomBytes(32).toString("hex");
+  (req.session as any).oauthState = state;
+
+  const url = oauth2Client.generateAuthUrl({
+    access_type: "offline", // To get a refresh token
+    scope: [
+      "https://www.googleapis.com/auth/calendar.events",
+      "https://www.googleapis.com/auth/userinfo.profile",
+      "https://www.googleapis.com/auth/userinfo.email"
+    ],
+    state,
+    prompt: "consent" // Force to always get refresh token
+  });
+
+  res.redirect(url);
+});
+
+app.get("/api/auth/google/callback", async (req, res) => {
+  const { code, state, error } = req.query;
+
+  if (error) {
+    logger.error(`OAuth Error from Google: ${error}`);
+    return res.redirect("/?auth_error=google_rejected");
+  }
+
+  // CSRF validation
+  if (!state || state !== (req.session as any).oauthState) {
+    logger.error("OAuth State mismatch (CSRF attempt or session lost)");
+    return res.redirect("/?auth_error=state_mismatch");
+  }
+
+  try {
+    const { tokens } = await oauth2Client.getToken(code as string);
+    (req.session as any).googleTokens = tokens;
+    
+    // Fetch user profile to display in UI
+    const oauth2 = google.oauth2({ version: "v2", auth: oauth2Client });
+    oauth2Client.setCredentials(tokens);
+    const userInfo = await oauth2.userinfo.get();
+    
+    (req.session as any).googleProfile = {
+      name: userInfo.data.name,
+      email: userInfo.data.email,
+      picture: userInfo.data.picture,
+    };
+
+    res.redirect("/"); // Redirect back to Chronos dashboard
+  } catch (err: any) {
+    logger.error("Failed to exchange OAuth code", err);
+    res.redirect("/?auth_error=token_exchange_failed");
+  }
+});
+
+app.get("/api/auth/status", (req, res) => {
+  const session = req.session as any;
+  if (session.googleTokens && session.googleProfile) {
+    return res.json({
+      connected: true,
+      profile: session.googleProfile
+    });
+  }
+  return res.json({ connected: false });
+});
+
+app.post("/api/auth/disconnect", (req, res) => {
+  const session = req.session as any;
+  if (session.googleTokens) {
+    // Optional: revoke token on Google's side
+    try {
+      oauth2Client.revokeToken(session.googleTokens.access_token);
+    } catch(e) {}
+    delete session.googleTokens;
+    delete session.googleProfile;
+  }
+  res.json({ success: true });
+});
+
+app.get("/api/calendar/events", async (req, res) => {
+  const session = req.session as any;
+  if (!session.googleTokens) {
+    return res.status(401).json({ error: "Not authenticated with Google Calendar" });
+  }
+
+  try {
+    const calendar = getCalendarClient(session.googleTokens);
+    
+    // Fetch events from now to +7 days
+    const timeMin = new Date().toISOString();
+    const timeMax = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
+    const response = await calendar.events.list({
+      calendarId: "primary",
+      timeMin,
+      timeMax,
+      maxResults: 100,
+      singleEvents: true,
+      orderBy: "startTime",
+    });
+
+    const items = response.data.items || [];
+    
+    // Map to Chronos format
+    const events = items.map((item: any) => ({
+      id: item.id,
+      title: item.summary || "Untitled Event",
+      start: item.start.dateTime || item.start.date,
+      end: item.end.dateTime || item.end.date,
+      description: item.description || "",
+      isChronosEvent: item.extendedProperties?.private?.created_by === "chronos_ai"
+    }));
+
+    res.json({ events });
+  } catch (error: any) {
+    logger.error("Failed to fetch calendar events", error);
+    if (error.code === 401 || error.code === 403) {
+      delete session.googleTokens; // Token probably expired and refresh failed
+      return res.status(401).json({ error: "Google authentication expired. Please reconnect." });
+    }
+    res.status(500).json({ error: "Failed to fetch events" });
+  }
+});
+
+app.post("/api/calendar/sync", async (req, res) => {
+  const { focusBlocks } = req.body;
+  const session = req.session as any;
+
+  if (!session.googleTokens) {
+    return res.status(401).json({ error: "Not authenticated" });
+  }
+
+  if (!Array.isArray(focusBlocks)) {
+    return res.status(400).json({ error: "Invalid focus blocks payload" });
+  }
+
+  try {
+    const calendar = getCalendarClient(session.googleTokens);
+    const createdEvents = [];
+
+    for (const block of focusBlocks) {
+      // Calculate start and end times
+      const start = new Date(Date.now() + (block.startOffsetMinutes || 0) * 60 * 1000);
+      const end = new Date(start.getTime() + (block.durationMinutes || 30) * 60 * 1000);
+
+      const event = {
+        summary: `🛡️ ${block.title} (Chronos Focus Shield)`,
+        description: `This event was autonomously scheduled by Chronos AI to protect your focus.\n\nTarget Action: ${block.actionPlan || "Deep Work"}`,
+        start: { dateTime: start.toISOString() },
+        end: { dateTime: end.toISOString() },
+        colorId: "9", // Blueberry color in Google Calendar
+        extendedProperties: {
+          private: {
+            created_by: "chronos_ai",
+            task_id: block.taskId || "unknown"
+          }
+        },
+        reminders: {
+          useDefault: false,
+          overrides: [
+            { method: "popup", minutes: 5 }
+          ]
+        }
+      };
+
+      const result = await calendar.events.insert({
+        calendarId: "primary",
+        requestBody: event
+      });
+      
+      createdEvents.push(result.data);
+    }
+
+    res.json({ success: true, count: createdEvents.length, events: createdEvents });
+  } catch (error: any) {
+    logger.error("Failed to sync blocks to calendar", error);
+    res.status(500).json({ error: "Failed to schedule events" });
+  }
+});
 
 // Rate limiting (30 req per 1 min per IP)
 const apiLimiter = rateLimit({
@@ -274,6 +506,31 @@ app.post("/api/health/validate-key", async (req, res) => {
   }
 });
 
+// Helper to fetch live calendar context for AI reasoning
+async function fetchCalendarContext(session: any): Promise<string> {
+  if (!session?.googleTokens) return "No Google Calendar connected.";
+  try {
+    const calendar = getCalendarClient(session.googleTokens);
+    const timeMin = new Date().toISOString();
+    const timeMax = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(); // Next 3 days
+    const response = await calendar.events.list({
+      calendarId: "primary",
+      timeMin,
+      timeMax,
+      maxResults: 15,
+      singleEvents: true,
+      orderBy: "startTime",
+    });
+    const items = response.data.items || [];
+    if (items.length === 0) return "Calendar is clear for the next 3 days.";
+    const summaries = items.map((i: any) => `- ${i.summary} (${new Date(i.start.dateTime || i.start.date).toLocaleString()})`).join("\n");
+    return `Upcoming Calendar Events (Next 3 days):\n${summaries}`;
+  } catch (e) {
+    logger.error("Failed to fetch calendar context for AI", e);
+    return "Google Calendar connected but unable to fetch events.";
+  }
+}
+
 // 1. Intelligent Task Prioritization Endpoint
 app.post("/api/prioritize", async (req, res) => {
   const { tasks } = req.body;
@@ -345,12 +602,19 @@ app.post("/api/prioritize", async (req, res) => {
   }
 
   try {
+    const calendarContext = await fetchCalendarContext(req.session);
+
     const prompt = `Analyze the following tasks and evaluate their risk of missing deadlines. 
     Current local time is: ${new Date().toISOString()}.
     
     Tasks:
     ${JSON.stringify(tasks, null, 2)}
     
+    User's Calendar Context:
+    ${calendarContext}
+    
+    Factor the user's upcoming meetings into your risk score and urgency level. If their calendar is full, tasks with approaching deadlines become much higher risk.
+
     For each task, provide:
     1. A risk score from 0 to 100 (chance of missing deadline or failing to complete on time).
     2. An urgency level: 'low', 'medium', 'high', 'critical'.
@@ -503,14 +767,19 @@ app.post("/api/recovery", async (req, res) => {
   }
 
   try {
+    const calendarContext = await fetchCalendarContext(req.session);
     const prompt = `Perform an advanced Autonomous Deadline Recovery and failure analysis. 
     Current local time is: ${new Date().toISOString()}.
     
     Tasks list:
     ${JSON.stringify(tasks, null, 2)}
     
-    Evaluate only pending/incomplete tasks.
-    We need to identify timeline threats, compute failure probability, explain why, provide rescheduling recommendations, and suggest highly-focused focus blocks (starting minutes offset from now) to recover the schedule.
+    User's Live Calendar Commitments:
+    ${calendarContext}
+    
+    Evaluate only pending/incomplete tasks. Factor in the user's existing calendar commitments. If they have heavy meetings, their capacity to complete tasks decreases, increasing Concurrency Debt and Timeline Risk.
+    
+    We need to identify timeline threats, compute failure probability, explain why, provide rescheduling recommendations, and suggest highly-focused focus blocks (starting minutes offset from now) to recover the schedule. Avoid scheduling focus blocks during their existing meetings!
     
     Format the response as a JSON object matching this schema:
     {

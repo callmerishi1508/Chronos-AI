@@ -59,7 +59,7 @@ export default function App() {
   const [aiActive, setAiActive] = useState(false);
 
   // Active view navigation
-  const [activeTab, setActiveTab] = useSharedState<"command" | "tasks" | "calendar" | "agent" | "habits" | "speech" | "chat" | "human-os" | "xai" | "simulator">("chronos_activeTab", "command");
+  const [activeTab, setActiveTab] = useSharedState<"command" | "tasks" | "calendar" | "agent" | "habits" | "speech" | "chat" | "human-os" | "xai" | "simulator">("chronos_activeTab", "tasks");
   const [activeFocusTask, setActiveFocusTask] = useSharedState<Task | null>("chronos_activeFocusTask", null);
 
   // In-app alert nudges
@@ -73,6 +73,10 @@ export default function App() {
   const [isRecoveryPlanCommitted, setIsRecoveryPlanCommitted] = useState(false);
   const [showSecondaryTools, setShowSecondaryTools] = useState(false);
   const [preDemoState, setPreDemoState] = useState<{tasks: Task[], events: CalendarEvent[], goal: string} | null>(null);
+
+  // Google Calendar integration
+  const [isGoogleConnected, setIsGoogleConnected] = useState(false);
+  const [googleProfile, setGoogleProfile] = useState<any>(null);
 
   // Demo Dataset Injector (5 clicks)
   const [logoClicks, setLogoClicks] = useState(0);
@@ -230,9 +234,9 @@ export default function App() {
     setActiveGoal(data.mission);
     setSafeStorage("lifesaver_goal", data.mission);
 
-    // Save and apply tasks
-    setTasks(data.tasks);
-    setSafeStorage("lifesaver_tasks", data.tasks);
+    // Save and apply tasks safely
+    setTasks(Array.isArray(data.tasks) ? data.tasks : []);
+    setSafeStorage("lifesaver_tasks", Array.isArray(data.tasks) ? data.tasks : []);
 
     // Create corresponding events
     const initialEvents: CalendarEvent[] = [
@@ -385,6 +389,44 @@ export default function App() {
     fetchAI("/api/ai-status", {}, { priority: "critical" })
       .then((data) => setAiActive(data.active))
       .catch(() => setAiActive(false));
+
+    // 1.5. Check Google Calendar Auth Status
+    const fetchAuthStatus = async () => {
+      try {
+        const res = await fetch("/api/auth/status");
+        if (res.ok) {
+          const data = await res.json();
+          setIsGoogleConnected(data.connected);
+          if (data.connected && data.profile) {
+            setGoogleProfile(data.profile);
+            fetchRealEvents();
+          }
+        }
+      } catch(e) {}
+    };
+
+    const fetchRealEvents = async () => {
+      try {
+        const res = await fetch("/api/calendar/events");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.events && Array.isArray(data.events)) {
+            // Merge with local AI scheduled events, keeping real ones
+            setEvents(prev => {
+              const localAI = prev.filter(e => e.isAIScheduled);
+              return [...data.events, ...localAI];
+            });
+          }
+        }
+      } catch(e) {}
+    };
+
+    fetchAuthStatus();
+    
+    // Auto-refresh calendar every 5 minutes if connected
+    const syncInterval = setInterval(() => {
+      if (isGoogleConnected) fetchRealEvents();
+    }, 5 * 60 * 1000);
 
     // 2. Load from localStorage or set defaults
     if (tasks.length === 0 && !safeParseStorage("lifesaver_tasks", null)) {
@@ -1143,10 +1185,12 @@ export default function App() {
         <div className="flex border-b border-slate-800 overflow-x-auto shrink-0 scrollbar-none pb-0.5 mb-2 justify-between items-center gap-4">
           <nav className="flex gap-1 sm:gap-2">
             {[
-              { id: "command", label: "Command Center", icon: <Crosshair className="w-4 h-4 text-rose-500" /> },
-              { id: "calendar", label: "Focus Agenda", icon: <Calendar className="w-4 h-4 text-indigo-400" /> },
-              { id: "human-os", label: "Human OS", icon: <Brain className="w-4 h-4 text-indigo-400" /> },
+              { id: "tasks", label: "My Tasks", icon: <Clock className="w-4 h-4 text-emerald-400" /> },
+              { id: "calendar", label: "Calendar", icon: <Calendar className="w-4 h-4 text-indigo-400" /> },
+              { id: "command", label: "Risk & Recovery", icon: <Crosshair className="w-4 h-4 text-rose-500" /> },
               { id: "xai", label: "XAI Inspector", icon: <Brain className="w-4 h-4 text-amber-400" /> },
+              { id: "human-os", label: "Human OS", icon: <Brain className="w-4 h-4 text-indigo-400" /> },
+              { id: "simulator", label: "Future Simulation", icon: <Hourglass className="w-4 h-4 text-purple-400" /> },
             ].map((tab) => {
               const isActive = activeTab === tab.id;
               return (
@@ -1188,8 +1232,8 @@ export default function App() {
           >
             <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
             <span>
-              {["tasks", "simulator", "agent", "habits", "speech", "chat"].includes(activeTab)
-                ? `Tool: ${activeTab === "simulator" ? "Simulator" : activeTab === "human-os" ? "Human OS" : activeTab}`
+              {["agent", "habits", "speech", "chat"].includes(activeTab)
+                ? `Tool: ${activeTab}`
                 : "Tools Area"}
             </span>
             {showSecondaryTools ? (
@@ -1209,10 +1253,8 @@ export default function App() {
               exit={{ height: 0, opacity: 0 }}
               className="overflow-hidden mb-4 border-b border-slate-800/80 pb-4"
             >
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 pt-3">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3">
                 {[
-                  { id: "tasks", label: "Intelligent Tasks", desc: "Backlog priority planner", icon: <Clock className="w-4 h-4 text-emerald-400" /> },
-                  { id: "simulator", label: "Future Self Simulator", desc: "Flagship Simulator", icon: <Hourglass className="w-4 h-4 text-purple-400" /> },
                   { id: "agent", label: "Autonomous Agent", desc: "Goal breakdowns & logs", icon: <Terminal className="w-4 h-4 text-indigo-400" /> },
                   { id: "habits", label: "Streaks & Routines", desc: "Energy & rhythm tracking", icon: <Heart className="w-4 h-4 text-pink-400" /> },
                   { id: "speech", label: "Speech Nudge", desc: "Voice diagnostic feed", icon: <Mic className="w-4 h-4 text-sky-400" /> },
@@ -1285,6 +1327,7 @@ export default function App() {
                     isPrioritizing={isPrioritizing}
                     activeFocusTask={activeFocusTask}
                     setActiveFocusTask={setActiveFocusTask}
+                    onStartJudgeDemo={triggerJudgeDemo}
                   />
                 )}
 
@@ -1296,11 +1339,15 @@ export default function App() {
                     isScheduling={isScheduling}
                     onClearAIScheduled={handleClearAIScheduled}
                     onCompleteTask={handleCompleteTask}
+                    isDemoActive={isJudgeDemoActive}
+                    isGoogleConnected={isGoogleConnected}
+                    googleProfile={googleProfile}
                   />
                 )}
 
                 {activeTab === "simulator" && (
                   <FutureSelfSimulator
+                    tasks={tasks}
                     isRecoveryActive={isRecoveryPlanCommitted}
                     onActivateRecovery={() => {
                       setIsRecoveryPlanCommitted(true);

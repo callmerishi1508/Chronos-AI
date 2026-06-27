@@ -5,16 +5,34 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
+import { Task } from "../types";
+
 interface FutureSelfSimulatorProps {
   isRecoveryActive?: boolean;
   onActivateRecovery?: () => void;
+  tasks?: Task[];
 }
 
 export default function FutureSelfSimulator({
   isRecoveryActive = false,
-  onActivateRecovery
+  onActivateRecovery,
+  tasks = []
 }: FutureSelfSimulatorProps) {
   const [selectedTimeline, setSelectedTimeline] = useState<"collapse" | "saved">("collapse");
+
+  if (tasks.length === 0) {
+    return (
+      <div className="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-12 flex flex-col items-center justify-center gap-4 text-center min-h-[400px]">
+        <div className="w-16 h-16 rounded-full bg-slate-900 flex items-center justify-center border border-slate-800 mb-2">
+          <Brain className="w-8 h-8 text-indigo-500/50" />
+        </div>
+        <h2 className="text-sm font-bold text-slate-300 uppercase tracking-widest font-mono">No Simulation Data</h2>
+        <p className="text-xs text-slate-500 font-sans max-w-sm leading-relaxed">
+          The Future Self Simulator requires active tasks to model timeline collapse and recovery paths. Add tasks to initialize the prediction engine.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div id="future-self-simulator" className="bg-slate-950 border border-slate-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden flex flex-col gap-6">

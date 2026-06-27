@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Calendar, Clock, Sparkles, AlertTriangle, CheckCircle, RefreshCcw, Eye, EyeOff } from "lucide-react";
+import { useSharedState } from "../utils/useSharedState";
 import { CalendarEvent, Task } from "../types";
 
 interface CalendarViewProps {
@@ -9,6 +10,9 @@ interface CalendarViewProps {
   isScheduling: boolean;
   onClearAIScheduled: () => void;
   onCompleteTask: (id: string) => void;
+  isDemoActive?: boolean;
+  isGoogleConnected?: boolean;
+  googleProfile?: any;
 }
 
 export default function CalendarView({
@@ -18,8 +22,22 @@ export default function CalendarView({
   isScheduling,
   onClearAIScheduled,
   onCompleteTask,
+  isDemoActive = false,
+  isGoogleConnected = false,
+  googleProfile = null,
 }: CalendarViewProps) {
   const [showAISlotsOnly, setShowAISlotsOnly] = useState(false);
+
+  const handleConnectCalendar = () => {
+    window.location.href = "/api/auth/google";
+  };
+
+  const handleDisconnect = async () => {
+    try {
+      await fetch("/api/auth/disconnect", { method: "POST" });
+      window.location.reload();
+    } catch (e) {}
+  };
 
   // Filter events
   const filteredEvents = showAISlotsOnly
@@ -63,8 +81,31 @@ export default function CalendarView({
             <Calendar className="w-5 h-5" />
           </span>
           <div>
-            <h2 className="text-base font-bold text-white">Daily Agenda & Focus Slots</h2>
-            <p className="text-xs text-slate-400">See manual events and auto-scheduled deep work blocks.</p>
+            <h2 className="text-base font-bold text-white flex items-center gap-2">
+              Daily Agenda & Focus Slots
+              {isDemoActive ? (
+                <span className="px-2 py-0.5 text-[10px] font-mono rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">Demo Calendar</span>
+              ) : isGoogleConnected ? (
+                <span className="px-2 py-0.5 text-[10px] font-mono rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Google Calendar Connected</span>
+              ) : (
+                <span className="px-2 py-0.5 text-[10px] font-mono rounded bg-slate-800 text-slate-400 border border-slate-700">Calendar Not Connected</span>
+              )}
+            </h2>
+            <p className="text-xs text-slate-400 mt-0.5">
+              {isDemoActive ? (
+                <span>Sample Events: {events.filter(e => !e.isAIScheduled).length} | Auto-Scheduled: {events.filter(e => e.isAIScheduled).length}</span>
+              ) : isGoogleConnected ? (
+                <span className="flex items-center gap-2">
+                  {googleProfile?.picture && <img src={googleProfile.picture} alt="Avatar" className="w-4 h-4 rounded-full" />}
+                  {googleProfile?.email || "Connected"} | Auto-Scheduled: {events.filter(e => e.isChronosEvent || e.isAIScheduled).length} | Last Sync: Just now
+                  <button onClick={handleDisconnect} className="ml-2 text-red-400 hover:text-red-300 underline underline-offset-2 text-[10px]">Disconnect</button>
+                </span>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <button onClick={handleConnectCalendar} className="text-indigo-400 hover:text-indigo-300 underline underline-offset-2">Connect Google Calendar via OAuth</button>
+                </div>
+              )}
+            </p>
           </div>
         </div>
 
@@ -110,108 +151,144 @@ export default function CalendarView({
       </div>
 
       {/* Main Agenda Visual Row */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        {daysToShow.map((day, idx) => {
-          const dayEvents = getEventsForDay(day, filteredEvents);
-          // Sort events by start time
-          dayEvents.sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
-
-          const isToday = idx === 0;
-
-          return (
-            <div
-              key={idx}
-              id={`agenda-day-${idx}`}
-              className={`bg-slate-950/60 border ${
-                isToday ? "border-indigo-500/30 ring-1 ring-indigo-500/10" : "border-slate-800/80"
-              } rounded-xl p-3 flex flex-col h-[320px] transition hover:border-slate-700`}
+      {filteredEvents.length === 0 ? (
+        <div className="flex flex-col items-center justify-center text-center py-16 px-4 bg-slate-950/60 border border-slate-800/80 rounded-2xl h-[320px]">
+          <div className="w-16 h-16 rounded-full bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20 mb-4">
+            <Calendar className="w-8 h-8 text-indigo-400 opacity-80" />
+          </div>
+          <h3 className="text-sm font-bold text-white mb-1">No Events Scheduled</h3>
+          <p className="text-xs text-slate-400 max-w-md mb-6 leading-relaxed">
+            Your timeline is currently clear. Connect Google Calendar to see your existing commitments, or let Chronos AI intelligently schedule focus blocks based on your task backlog.
+          </p>
+          <div className="flex gap-3">
+            {!isGoogleConnected && !isDemoActive && (
+              <div className="flex flex-col items-center gap-2">
+                <button 
+                  onClick={handleConnectCalendar}
+                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold rounded-xl transition"
+                >
+                  Connect Calendar
+                </button>
+              </div>
+            )}
+            <button 
+              onClick={onAutoSchedule}
+              disabled={isScheduling || tasks.filter(t => !t.completed).length === 0}
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-lg shadow-indigo-950 flex items-center gap-2 transition"
             >
-              {/* Day Header */}
-              <div className="flex items-center justify-between border-b border-slate-900 pb-2 mb-2">
-                <span className="text-xs font-bold text-white font-mono">
-                  {day.toLocaleDateString("en-US", { weekday: "short" })}
-                </span>
-                <span className={`text-xs font-bold font-mono px-2 py-0.5 rounded-full ${
-                  isToday ? "bg-indigo-600 text-white" : "bg-slate-900 text-slate-400"
-                }`}>
-                  {day.getDate()}
-                </span>
-              </div>
+              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+              Auto-Schedule Tasks
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          {daysToShow.map((day, idx) => {
+            const dayEvents = getEventsForDay(day, filteredEvents);
+            // Sort events by start time
+            dayEvents.sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
 
-              {/* Day Events Scrollbox */}
-              <div className="flex-1 overflow-y-auto flex flex-col gap-2 pr-1">
-                {dayEvents.length === 0 ? (
-                  <div className="flex-1 flex flex-col items-center justify-center text-center text-[10px] text-slate-600 py-10 border border-dashed border-slate-900 rounded-lg">
-                    <span>Empty agenda</span>
-                  </div>
-                ) : (
-                  dayEvents.map((event) => {
-                    const eventStart = new Date(event.start);
-                    const eventEnd = new Date(event.end);
-                    const isCompleted = event.taskId 
-                      ? tasks.find((t) => t.id === event.taskId)?.completed 
-                      : false;
+            const isToday = idx === 0;
 
-                    // Neon styling for AI blocks
-                    const cardBg = event.isAIScheduled
-                      ? isCompleted
-                        ? "bg-slate-950 text-slate-500 border-slate-900"
-                        : "bg-indigo-950/40 border-indigo-900/50 hover:bg-indigo-950/60 hover:border-indigo-800 text-indigo-200"
-                      : "bg-slate-900/80 border-slate-800 hover:border-slate-700 text-slate-300";
+            return (
+              <div
+                key={idx}
+                id={`agenda-day-${idx}`}
+                className={`bg-slate-950/60 border ${
+                  isToday ? "border-indigo-500/30 ring-1 ring-indigo-500/10" : "border-slate-800/80"
+                } rounded-xl p-3 flex flex-col h-[320px] transition hover:border-slate-700`}
+              >
+                {/* Day Header */}
+                <div className="flex items-center justify-between border-b border-slate-900 pb-2 mb-2">
+                  <span className="text-xs font-bold text-white font-mono">
+                    {day.toLocaleDateString("en-US", { weekday: "short" })}
+                  </span>
+                  <span className={`text-xs font-bold font-mono px-2 py-0.5 rounded-full ${
+                    isToday ? "bg-indigo-600 text-white" : "bg-slate-900 text-slate-400"
+                  }`}>
+                    {day.getDate()}
+                  </span>
+                </div>
 
-                    return (
-                      <div
-                        key={event.id}
-                        id={`agenda-item-${event.id}`}
-                        className={`p-2.5 pl-4 rounded-lg border text-left transition-all ${cardBg} relative overflow-hidden`}
-                      >
-                        {/* Left border indicator line */}
-                        <div className={`absolute left-0 top-0 bottom-0 w-1 ${
-                          event.isAIScheduled 
-                            ? isCompleted ? "bg-slate-800" : "bg-indigo-500" 
-                            : "bg-slate-500"
-                        }`}></div>
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-[9px] font-mono opacity-80 flex items-center gap-1">
-                            <Clock className="w-2.5 h-2.5" />
-                            {eventStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
-                          </span>
-                          
-                          {event.isAIScheduled && (
-                            <span className="text-[8px] tracking-wider font-bold bg-amber-500/10 text-amber-400 font-mono px-1 rounded uppercase">
-                              AI Focus
+                {/* Day Events Scrollbox */}
+                <div className="flex-1 overflow-y-auto flex flex-col gap-2 pr-1">
+                  {dayEvents.length === 0 ? (
+                    <div className="flex-1 flex flex-col items-center justify-center text-center text-[10px] text-slate-600 py-10 border border-dashed border-slate-900 rounded-lg">
+                      <span>Clear</span>
+                    </div>
+                  ) : (
+                    dayEvents.map((event) => {
+                      const eventStart = new Date(event.start);
+                      const eventEnd = new Date(event.end);
+                      const isCompleted = event.taskId 
+                        ? tasks.find((t) => t.id === event.taskId)?.completed 
+                        : false;
+
+                      // Neon styling for AI blocks
+                      const isAIBlock = event.isAIScheduled || event.isChronosEvent;
+                      const cardBg = isAIBlock
+                        ? isCompleted
+                          ? "bg-slate-950 text-slate-500 border-slate-900"
+                          : "bg-indigo-950/40 border-indigo-900/50 hover:bg-indigo-950/60 hover:border-indigo-800 text-indigo-200"
+                        : "bg-slate-900/80 border-slate-800 hover:border-slate-700 text-slate-300";
+
+                      return (
+                        <div
+                          key={event.id}
+                          id={`agenda-item-${event.id}`}
+                          className={`p-2.5 pl-4 rounded-lg border text-left transition-all ${cardBg} relative overflow-hidden`}
+                        >
+                          {/* Left border indicator line */}
+                          <div className={`absolute left-0 top-0 bottom-0 w-1 ${
+                            isAIBlock 
+                              ? isCompleted ? "bg-slate-800" : "bg-indigo-500" 
+                              : "bg-slate-500"
+                          }`}></div>
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-[9px] font-mono opacity-80 flex items-center gap-1">
+                              <Clock className="w-2.5 h-2.5" />
+                              {eventStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
                             </span>
-                          )}
-                        </div>
-                        
-                        <h4 className={`text-xs font-bold truncate leading-tight ${isCompleted ? "line-through text-slate-600" : ""}`}>
-                          {event.title}
-                        </h4>
-                        
-                        {event.description && (
-                          <p className="text-[10px] opacity-70 mt-1 line-clamp-2 leading-normal">
-                            {event.description}
-                          </p>
-                        )}
+                            
+                            {isAIBlock && (
+                              <span className="text-[8px] tracking-wider font-bold bg-amber-500/10 text-amber-400 font-mono px-1 rounded uppercase flex items-center gap-1">
+                                AI Focus
+                                <Sparkles className="w-3 h-3 text-amber-300" />
+                              </span>
+                            )}
+                          </div>
+                          
+                          <h4 className={`text-xs font-bold truncate leading-tight ${isCompleted ? "line-through text-slate-600" : ""}`}>
+                            {event.title}
+                          </h4>
+                          
+                          <div className="flex justify-between items-end">
+                            {event.description && (
+                              <p className="text-[10px] opacity-60 mt-1 line-clamp-1 truncate w-[85%]">
+                                {event.description}
+                              </p>
+                            )}
 
-                        {event.isAIScheduled && event.taskId && !isCompleted && (
-                          <button
-                            id={`btn-complete-cal-task-${event.id}`}
-                            onClick={() => onCompleteTask(event.taskId!)}
-                            className="w-full mt-2 text-[9px] font-bold font-mono py-1 px-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded transition text-center"
-                          >
-                            Mark Goal Completed
-                          </button>
-                        )}
-                      </div>
-                    );
-                  })
-                )}
+                            {isAIBlock && !isCompleted && event.taskId && (
+                              <button
+                                onClick={() => onCompleteTask(event.taskId!)}
+                                className="absolute bottom-2 right-2 text-indigo-300 hover:text-white bg-indigo-900/50 hover:bg-indigo-700 rounded-full p-1 transition"
+                                title="Mark focus session complete"
+                              >
+                                <CheckCircle className="w-3 h-3" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
       <div className="mt-4 p-3 bg-slate-950 border border-slate-800/80 rounded-xl flex items-start gap-2 text-xs">
         <span className="p-1 rounded bg-indigo-500/10 text-indigo-400 mt-0.5">

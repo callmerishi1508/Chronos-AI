@@ -15,6 +15,7 @@ interface TaskPlannerProps {
   isPrioritizing: boolean;
   activeFocusTask: Task | null;
   setActiveFocusTask: (task: Task | null) => void;
+  onStartJudgeDemo?: () => void;
 }
 
 export default function TaskPlanner({
@@ -26,6 +27,7 @@ export default function TaskPlanner({
   isPrioritizing,
   activeFocusTask,
   setActiveFocusTask,
+  onStartJudgeDemo,
 }: TaskPlannerProps) {
   // Local state for the add task form
   const [title, setTitle] = useState("");
@@ -346,23 +348,47 @@ export default function TaskPlanner({
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="bg-slate-900/40 border border-slate-800/40 border-dashed rounded-xl p-12 text-center text-slate-400 flex flex-col items-center justify-center gap-3 relative overflow-hidden group hover:border-slate-700 transition-colors"
+                className="bg-slate-900/40 border border-slate-800/40 border-dashed rounded-xl p-12 text-center text-slate-400 flex flex-col items-center justify-center gap-5 relative overflow-hidden group hover:border-slate-700 transition-colors"
               >
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(99,102,241,0.05),transparent_50%)] pointer-events-none" />
-                <div className="p-4 rounded-full bg-slate-800/50 group-hover:scale-110 transition-transform duration-500 ease-out">
-                  <CheckCircle className="w-8 h-8 text-indigo-400" />
+                <div className="p-5 rounded-full bg-slate-800/50 group-hover:scale-110 transition-transform duration-500 ease-out">
+                  <CheckCircle className="w-10 h-10 text-indigo-400" />
                 </div>
                 <div>
-                  <p className="font-semibold text-white tracking-tight text-lg">You're ahead of schedule.</p>
-                  <p className="text-sm text-slate-400 mt-1">Let's create your first priority.</p>
+                  <h3 className="font-bold text-white tracking-tight text-xl mb-2">Your Focus Agenda is Clear</h3>
+                  <p className="text-sm text-slate-400 max-w-md mx-auto leading-relaxed">
+                    Chronos AI needs tasks to analyze your workload and detect hidden timeline risks. 
+                    Add your first task, or try the interactive Judge Demo to see Chronos in action.
+                  </p>
                 </div>
-                <button
-                  onClick={() => setIsAdding(true)}
-                  className="mt-2 min-h-[44px] px-5 py-2 text-xs font-semibold bg-indigo-600 text-white rounded-lg font-mono uppercase tracking-wider btn-premium btn-premium-hover flex items-center gap-2 border border-indigo-500/30"
-                >
-                  <Plus className="w-4 h-4 text-indigo-300" />
-                  Define Next Task
-                </button>
+                <div className="flex flex-col sm:flex-row items-center gap-3 mt-2 relative z-10">
+                  <button
+                    onClick={() => setIsAdding(true)}
+                    className="min-h-[44px] px-5 py-2 text-xs font-semibold bg-indigo-600 text-white rounded-lg font-mono uppercase tracking-wider btn-premium btn-premium-hover flex items-center gap-2 shadow-lg shadow-indigo-950"
+                  >
+                    <Plus className="w-4 h-4 text-white" />
+                    Add Task
+                  </button>
+                  {onStartJudgeDemo && (
+                    <button
+                      onClick={onStartJudgeDemo}
+                      className="min-h-[44px] px-5 py-2 text-xs font-semibold bg-slate-800 text-indigo-300 border border-indigo-500/30 rounded-lg font-mono uppercase tracking-wider hover:bg-slate-700 transition flex items-center gap-2"
+                    >
+                      <Play className="w-4 h-4 fill-indigo-400" />
+                      Start Judge Demo
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                       const tab = document.getElementById("tab-btn-calendar");
+                       if (tab) tab.click();
+                    }}
+                    className="min-h-[44px] px-5 py-2 text-xs font-semibold bg-slate-900 text-slate-300 border border-slate-700 rounded-lg font-mono uppercase tracking-wider hover:bg-slate-800 transition flex items-center gap-2"
+                  >
+                    <Calendar className="w-4 h-4 text-slate-400" />
+                    Connect Calendar
+                  </button>
+                </div>
               </motion.div>
             ) : (
               filteredTasks.map((task) => {

@@ -78,7 +78,7 @@ export async function fetchAI(endpoint: string, payload: any, options: FetchOpti
     diagnostics.cacheHit = true;
     diagnostics.latency = performance.now() - startTime;
     guardian.recordCacheHit();
-    if ((import.meta as any).env?.DEV) console.table(diagnostics);
+
     return cached.data;
   }
 
@@ -157,7 +157,7 @@ async function executeFetchWithRetry(endpoint: string, payload: any, cacheKey: s
       CACHE_MAP.set(cacheKey, { timestamp: Date.now(), data });
       
       diagnostics.latency = Math.round(performance.now() - diagnostics.latency);
-      if ((import.meta as any).env?.DEV) console.table(diagnostics);
+
       
       return data;
       
@@ -195,7 +195,7 @@ async function executeFetchWithRetry(endpoint: string, payload: any, cacheKey: s
  */
 function handleLocalFallback(endpoint: string, payload: any, diagnostics: any) {
   diagnostics.model = "chronos-core-intelligence";
-  if ((import.meta as any).env?.DEV) console.table(diagnostics);
+
   
   if (onFallbackTriggered) {
     onFallbackTriggered();

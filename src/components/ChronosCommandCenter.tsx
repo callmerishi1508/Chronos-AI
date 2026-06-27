@@ -335,12 +335,26 @@ export default function ChronosCommandCenter({
     }
   };
 
-  const handleCommitToCalendar = () => {
+  const handleCommitToCalendar = async () => {
     if (primaryTask) {
-      onAutoScheduleFocusBlocks([
+      const blocksToSchedule = [
         { title: `[Focus Block] ${primaryTask.title}`, durationMinutes: 45, taskId: primaryTask.id }
-      ]);
+      ];
+      onAutoScheduleFocusBlocks(blocksToSchedule);
       addLogLine(`Scheduled high-focus blocks for '${primaryTask.title}' on Focus Agenda.`, "success");
+
+      try {
+        const res = await fetch("/api/calendar/sync", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ focusBlocks: blocksToSchedule })
+        });
+        if (res.ok) {
+          addLogLine(`Successfully pushed Focus Shields to Google Calendar!`, "success");
+        }
+      } catch (e) {
+        // Ignore local sync already happened
+      }
     } else {
       addLogLine("No active targets found to schedule. Add a task to commit.", "warning");
     }
@@ -700,6 +714,38 @@ export default function ChronosCommandCenter({
           </div>
         </div>
 
+        {/* ACTIVE FOCUS AGENDA VISIBILITY (Priority 5: User Data Visible) */}
+        {pendingTasks.length > 0 ? (
+          <div className="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-4 flex flex-col gap-3">
+            <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest border-b border-slate-800/60 pb-2">
+              <Layers className="w-3.5 h-3.5 inline-block mr-1 text-emerald-500" />
+              SYSTEM LOAD: ACTIVE TASKS DETECTED
+            </span>
+            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none snap-x">
+              {pendingTasks.map((task) => (
+                <div key={task.id} className="min-w-[240px] max-w-[240px] p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex flex-col gap-1 shrink-0 snap-start">
+                  <span className="text-[9px] font-mono font-bold text-slate-500 uppercase flex justify-between">
+                    <span>{task.category}</span>
+                    <span className={task.urgency === 'critical' ? 'text-red-400' : task.urgency === 'high' ? 'text-amber-400' : 'text-emerald-400'}>{task.urgency || 'Normal'}</span>
+                  </span>
+                  <span className="text-xs font-bold text-slate-200 truncate">{task.title}</span>
+                  <span className="text-[10px] text-slate-400 mt-1"><Clock className="w-3 h-3 inline-block mr-1" /> {task.estimatedDuration}h Est.</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-8 flex flex-col items-center justify-center gap-3 text-center">
+            <div className="w-12 h-12 rounded-full bg-slate-900 flex items-center justify-center border border-slate-800 mb-2">
+              <CheckSquare className="w-6 h-6 text-emerald-500/50" />
+            </div>
+            <span className="text-xs font-bold text-slate-300 uppercase tracking-widest font-mono">No Active Tasks</span>
+            <span className="text-[10px] text-slate-500 font-sans max-w-xs leading-relaxed">
+              Your focus agenda is currently clear. Add a task to initialize Chronos threat evaluation.
+            </span>
+          </div>
+        )}
+
         {/* MAIN HUD INTERACTION GRID */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           
@@ -804,9 +850,17 @@ export default function ChronosCommandCenter({
                 <div 
                   className={`p-2 rounded-lg border transition ${activeRadarSector === "Scope Overload" ? "bg-red-950/20 border-red-500/40" : "bg-slate-900/40 border-slate-800/80"}`}
                 >
-                  <span className="block text-[8px] text-indigo-400 uppercase font-mono">SCOPE OVERLOAD</span>
-                  <span className="text-indigo-300 font-extrabold">{metrics.scopeOverload}% Capacity</span>
+                  <span className="block text-[8px] text-sky-400 uppercase font-mono">SCOPE OVERLOAD</span>
+                  <span className="text-sky-300 font-extrabold">{metrics.scopeOverload}% Volume Over-index</span>
                 </div>
+              </div>
+
+              {/* THREAT SCORE EXPLANATION */}
+              <div className="w-full mt-1 p-3 bg-indigo-950/10 border border-indigo-500/20 rounded-xl flex items-start gap-2.5">
+                <HelpCircle className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
+                <p className="text-[10px] text-slate-400 leading-relaxed font-sans">
+                  <strong className="text-indigo-300">How is this calculated?</strong> Chronos continuously monitors your <strong>Tasks</strong>, <strong>Calendar Density</strong>, and <strong>Workload</strong>. It cross-references your current context-switching overhead (Concurrency Debt) against your historical behavior (Optimism Tax) to calculate the true mathematical probability of project failure.
+                </p>
               </div>
             </div>
 

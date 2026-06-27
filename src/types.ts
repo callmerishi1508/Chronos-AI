@@ -20,6 +20,7 @@ export interface CalendarEvent {
   end: string; // ISO date string
   description?: string;
   isAIScheduled?: boolean;
+  isChronosEvent?: boolean;
   taskId?: string;
 }
 

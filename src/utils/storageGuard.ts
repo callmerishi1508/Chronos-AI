@@ -33,6 +33,7 @@ export function migrateStorage<T>(key: string, parsedRaw: any, fallback: T): T {
   // Case 1: Old v1 unversioned data
   if (parsedRaw.version === undefined) {
     logger.info(`[Storage Guard] Migrating ${key} from v1 to v2 schema.`);
+    if (Array.isArray(fallback) && !Array.isArray(parsedRaw)) return fallback;
     setSafeStorage(key, parsedRaw);
     return parsedRaw as T;
   }
@@ -55,11 +56,16 @@ export function migrateStorage<T>(key: string, parsedRaw: any, fallback: T): T {
 
   // Case 2: Future version or exact match
   if (parsedRaw.version === CURRENT_SCHEMA_VERSION) {
+    if (Array.isArray(fallback) && !Array.isArray(parsedRaw.data)) return fallback;
     return parsedRaw.data as T;
   }
 
   // Fallback for extreme cases
-  return parsedRaw.data || fallback;
+  const result = parsedRaw.data !== undefined ? parsedRaw.data : fallback;
+  if (Array.isArray(fallback) && !Array.isArray(result)) {
+    return fallback;
+  }
+  return result as T;
 }
 
 export function safeParseStorage<T>(key: string, fallback: T): T {

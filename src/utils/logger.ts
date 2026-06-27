@@ -3,8 +3,7 @@
  * Masks sensitive data in production and prevents stack traces from leaking to standard out.
  */
 
-const isProd = typeof process !== "undefined" && process.env?.NODE_ENV === "production" 
-  || (typeof import.meta !== "undefined" && (import.meta as any).env?.MODE === "production");
+const isProd = typeof process !== "undefined" && process.env?.NODE_ENV === "production";
 
 function sanitizeArgs(args: any[]): any[] {
   if (!isProd) return args; // Return raw args in dev
