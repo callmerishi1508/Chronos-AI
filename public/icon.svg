@@ -1,0 +1,12 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512' width='512' height='512'>
+  <rect width='512' height='512' rx='128' fill='#020617'/>
+  <circle cx='256' cy='256' r='180' fill='none' stroke='#6366f1' stroke-width='16' stroke-dasharray='16 12'/>
+  <circle cx='256' cy='256' r='120' fill='none' stroke='#f43f5e' stroke-width='8' opacity='0.4'/>
+  <!-- Clock hands -->
+  <path d='M256 110 V256 H350' stroke='#6366f1' stroke-width='20' stroke-linecap='round' fill='none'/>
+  <!-- DNA Helix overlay curves -->
+  <path d='M160 256 C200 180, 312 180, 352 256 C312 332, 200 332, 160 256 Z' stroke='#a855f7' stroke-width='10' stroke-linecap='round' fill='none' opacity='0.75'/>
+  <path d='M160 256 C200 332, 312 332, 352 256 C312 180, 200 180, 160 256 Z' stroke='#06b6d4' stroke-width='6' stroke-dasharray='5 10' stroke-linecap='round' fill='none' opacity='0.6'/>
+  <circle cx='256' cy='256' r='22' fill='#f43f5e'/>
+  <circle cx='256' cy='256' r='10' fill='#ffffff'/>
+</svg>

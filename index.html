@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chronos AI | Autonomous Deadline Intelligence</title>
+    <!-- PWA Meta and Links -->
+    <meta name="theme-color" content="#020617" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Chronos AI" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="apple-touch-icon" href="/icon.svg" />
+    <script>
+      // Register service worker for offline capabilities
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('Chronos Service Worker registered successfully:', reg.scope))
+            .catch(err => console.warn('Service Worker registration failed:', err));
+        });
+      }
+
+      // Silence benign Vite/WebSocket error reports in sandbox environment
+      window.addEventListener('error', function(e) {
+        if (e.message && (
+          e.message.indexOf('WebSocket') !== -1 ||
+          e.message.indexOf('websocket') !== -1 ||
+          e.message.indexOf('vite') !== -1
+        )) {
+          e.stopImmediatePropagation();
+          e.preventDefault();
+        }
+      }, true);
+
+      window.addEventListener('unhandledrejection', function(e) {
+        const reason = e.reason && (e.reason.message || e.reason.stack || String(e.reason));
+        if (reason && (
+          reason.indexOf('WebSocket') !== -1 ||
+          reason.indexOf('websocket') !== -1 ||
+          reason.indexOf('vite') !== -1
+        )) {
+          e.stopImmediatePropagation();
+          e.preventDefault();
+        }
+      }, true);
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
