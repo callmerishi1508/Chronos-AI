@@ -1,6 +1,7 @@
 import React from "react";
 import { Sparkles, ArrowRight, Zap, Calendar, Heart, AlertCircle, ShieldCheck } from "lucide-react";
 import { Recommendation, Task } from "../types";
+import { AIBadge } from "./AIBadge";
 
 interface RecommendationEngineProps {
   briefing: string;

@@ -24,6 +24,7 @@ interface InterventionProtocol {
   taxPercentage: number;
   riskReduction: number;
   successProbAfter: number;
+  recommendedAction?: string;
   whyItMatters: string;
   whyOthersCanWait: string;
   ignoreConsequence: string;
