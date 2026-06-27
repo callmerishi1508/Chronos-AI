@@ -360,7 +360,7 @@ app.post("/api/prioritize", async (req, res) => {
     Format the response as a JSON array of objects.
     `;
 
-    const { result: response, provider } = await generateContentWithFallback(, , req.body.userApiKey);
+    const { result: response, provider } = await generateContentWithFallback(prompt, { responseMimeType: "application/json" }, req.body.userApiKey);
 
     const parsed = JSON.parse(response.text.trim());
     res.json({ prioritization: parsed, isMock: false });
@@ -549,7 +549,7 @@ app.post("/api/recovery", async (req, res) => {
     }
     `;
 
-    const { result: response, provider } = await generateContentWithFallback(, , req.body.userApiKey);
+    const { result: response, provider } = await generateContentWithFallback(prompt, { responseMimeType: "application/json" }, req.body.userApiKey);
 
     const parsed = JSON.parse(response.text.trim());
     res.json({ recovery: parsed, isMock: false });
@@ -663,7 +663,7 @@ app.post("/api/narrative", async (req, res) => {
     }
     `;
 
-    const { result: response, provider } = await generateContentWithFallback(, , req.body.userApiKey);
+    const { result: response, provider } = await generateContentWithFallback(prompt, { responseMimeType: "application/json" }, req.body.userApiKey);
 
     const parsed = JSON.parse(response.text.trim());
     res.json({ narrative: parsed, isMock: false });
@@ -774,7 +774,7 @@ app.post("/api/bias-analysis", async (req, res) => {
     }
     `;
 
-    const { result: response, provider } = await generateContentWithFallback(, , req.body.userApiKey);
+    const { result: response, provider } = await generateContentWithFallback(prompt, { responseMimeType: "application/json" }, req.body.userApiKey);
 
     const parsed = JSON.parse(response.text.trim());
     res.json({ analysis: parsed, isMock: false });
@@ -923,7 +923,7 @@ app.post("/api/personal-intelligence", async (req, res) => {
     }
     `;
 
-    const { result: response, provider } = await generateContentWithFallback(, , req.body.userApiKey);
+    const { result: response, provider } = await generateContentWithFallback(prompt, { responseMimeType: "application/json" }, req.body.userApiKey);
 
     const parsed = JSON.parse(response.text.trim());
     res.json({ profile: parsed, isMock: false });
@@ -1049,7 +1049,7 @@ app.post("/api/reasoning", async (req, res) => {
     }
     `;
 
-    const { result: response, provider } = await generateContentWithFallback(, , req.body.userApiKey);
+    const { result: response, provider } = await generateContentWithFallback(prompt, { responseMimeType: "application/json" }, req.body.userApiKey);
 
     const parsed = JSON.parse(response.text.trim());
     res.json({ reasoning: parsed, isMock: false });
@@ -1143,7 +1143,7 @@ app.post("/api/intervention", async (req, res) => {
     }
     `;
 
-    const { result: response, provider } = await generateContentWithFallback(, , req.body.userApiKey);
+    const { result: response, provider } = await generateContentWithFallback(prompt, { responseMimeType: "application/json" }, req.body.userApiKey);
 
     const parsed = JSON.parse(response.text.trim());
     res.json({ protocol: parsed, isMock: false });
@@ -1209,7 +1209,7 @@ app.post("/api/schedule", async (req, res) => {
     - description: A brief, motivational description of what specifically to accomplish in this slot.
     `;
 
-    const { result: response, provider } = await generateContentWithFallback(, , req.body.userApiKey);
+    const { result: response, provider } = await generateContentWithFallback(prompt, { responseMimeType: "application/json" }, req.body.userApiKey);
 
     const parsed = JSON.parse(response.text.trim());
     res.json({ scheduledBlocks: parsed.scheduledBlocks, isMock: false });
@@ -1267,7 +1267,7 @@ app.post("/api/plan-task", async (req, res) => {
     2. 'executionLogs': Array of strings representing a step-by-step terminal execution log.
     `;
 
-    const { result: response, provider } = await generateContentWithFallback(, , req.body.userApiKey);
+    const { result: response, provider } = await generateContentWithFallback(prompt, { responseMimeType: "application/json" }, req.body.userApiKey);
 
     const parsed = JSON.parse(response.text.trim());
     res.json({ ...parsed, isMock: false });
@@ -1381,7 +1381,7 @@ app.post("/api/recommendations", async (req, res) => {
     Return as a JSON object containing 'briefing' and 'recommendations'.
     `;
 
-    const { result: response, provider } = await generateContentWithFallback(, , req.body.userApiKey);
+    const { result: response, provider } = await generateContentWithFallback(prompt, { responseMimeType: "application/json" }, req.body.userApiKey);
 
     const parsed = JSON.parse(response.text.trim());
     res.json({ ...parsed, isMock: false });
@@ -1422,7 +1422,7 @@ app.post("/api/chat", async (req, res) => {
       parts: [{ text: m.content }]
     }));
 
-    const { result: response, provider } = await generateContentWithFallback(, , req.body.userApiKey);
+    const { result: response, provider } = await generateContentWithFallback(prompt, { responseMimeType: "application/json" }, req.body.userApiKey);
 
     res.json({ response: response.text, isMock: false });
   } catch (error: any) {
@@ -1466,7 +1466,7 @@ app.post("/api/voice-process", async (req, res) => {
       - time: relative or absolute time string if specified (e.g., 'Tomorrow at 9 AM')
     `;
 
-    const { result: response, provider } = await generateContentWithFallback(, , req.body.userApiKey);
+    const { result: response, provider } = await generateContentWithFallback(prompt, { responseMimeType: "application/json" }, req.body.userApiKey);
 
     const parsed = JSON.parse(response.text.trim());
     res.json({ ...parsed, isMock: false });
