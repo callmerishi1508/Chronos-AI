@@ -25,6 +25,7 @@ interface InterventionProtocol {
   riskReduction: number;
   successProbAfter: number;
   recommendedAction?: string;
+  confidenceScore?: number;
   whyItMatters: string;
   whyOthersCanWait: string;
   ignoreConsequence: string;
