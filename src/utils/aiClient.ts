@@ -201,7 +201,7 @@ function handleLocalFallback(endpoint: string, payload: any, diagnostics: any) {
     onFallbackTriggered();
   }
 
-  const meta = { _meta: { provider: "LOCAL_INTELLIGENCE" } };
+  const meta = { _meta: { provider: "CHRONOS_CORE_INTELLIGENCE" } };
 
   // Return mocked schema depending on endpoint
   if (endpoint.includes("recommendations")) {
@@ -266,7 +266,7 @@ function handleLocalFallback(endpoint: string, payload: any, diagnostics: any) {
         archetype: "Heuristic Defender",
         biasValue: 50,
         aiDiagnosis: "📡 CLOUD AI UNAVAILABLE: Running Chronos Core Intelligence (heuristic fallback). Based on local rule-based models, you must shield your morning hours from administrative tasks to maximize your high-velocity deep work window.",
-        geminiReasoning: "Fallback telemetry activated. Cognitive optimism vectors replaced with deterministic defaults."
+        aiReasoning: "Fallback telemetry activated. Cognitive optimism vectors replaced with deterministic defaults."
       },
       personalOptimismModel: {
         engineering: 50,

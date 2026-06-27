@@ -328,7 +328,7 @@ export default function JudgeDemoHUD({
                       <ShieldCheck className="w-3 h-3 text-emerald-400 mt-0.5 shrink-0" />
                       <div>
                         <span className="text-white font-bold block">GOOGLE TECH:</span>
-                        Gemini-powered cognitive profile + Explainable AI reasoner.
+                        Cloud AI-powered cognitive profile + Explainable AI reasoner.
                       </div>
                     </div>
                     <div className="flex items-start gap-1 bg-slate-900/40 p-1.5 rounded border border-slate-900">

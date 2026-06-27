@@ -590,7 +590,7 @@ export default function ChronosCommandCenter({
                     <button
                       onClick={onOpenReasoning}
                       disabled={loading}
-                      title="Inspect the AI's reasoning — see how Gemini calculated this score"
+                      title="Inspect the AI's reasoning — see how the AI calculated this score"
                       aria-label="Open AI Reasoning Inspector"
                       className="min-h-[44px] min-w-[44px] text-[9px] font-mono font-bold text-indigo-400 hover:text-indigo-300 transition uppercase cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
                     >
@@ -612,7 +612,7 @@ export default function ChronosCommandCenter({
                     <button
                       onClick={onOpenReasoning}
                       disabled={loading}
-                      title="Inspect the AI's reasoning — see how Gemini calculated this threat level"
+                      title="Inspect the AI's reasoning — see how the AI calculated this threat level"
                       aria-label="Open AI Reasoning Inspector"
                       className="min-h-[44px] min-w-[44px] text-[9px] font-mono font-bold text-amber-400 hover:text-amber-300 transition uppercase cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
                     >
@@ -992,7 +992,7 @@ export default function ChronosCommandCenter({
                         <button
                           onClick={onOpenReasoning}
                           disabled={loading}
-                          title="Inspect the AI's reasoning — see Gemini's full justification for this future scenario"
+                          title="Inspect the AI's reasoning — see the AI's full justification for this future scenario"
                           aria-label="Open AI Reasoning Inspector"
                           className="min-h-[44px] min-w-[44px] px-1.5 py-0.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-[8px] text-indigo-400 font-mono font-bold rounded cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
                         >

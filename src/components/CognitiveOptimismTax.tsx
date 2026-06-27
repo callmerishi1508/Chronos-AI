@@ -64,7 +64,7 @@ export default function CognitiveOptimismTax({ tasks, onCompleteTask }: Cognitiv
   const [logEst, setLogEst] = useState("4");
   const [logAct, setLogAct] = useState("6.5");
 
-  // Expanded task ID for Gemini explanation
+  // Expanded task ID for AI explanation
   const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
 
   // 2. Dedicated Demo Scenario Mode State (Requirement 8)
@@ -426,7 +426,7 @@ export default function CognitiveOptimismTax({ tasks, onCompleteTask }: Cognitiv
                       </div>
                     </div>
 
-                    {/* Expandable Gemini Detailed Diagnostics */}
+                    {/* Expandable AI Detailed Diagnostics */}
                     <div className="border-t border-slate-800/60 bg-slate-900/20 px-4 py-2.5 flex items-center justify-between text-xs text-slate-400">
                       <span className="text-[10px] font-mono">
                         {isExpanded ? "Interactive Diagnostics Expanded" : "Diagnostic analysis ready"}

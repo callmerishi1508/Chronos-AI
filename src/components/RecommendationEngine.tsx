@@ -181,7 +181,7 @@ export default function RecommendationEngine({
                         {rec.reasoning && (
                           <button
                             onClick={() => setExpandedRecId(expandedRecId === rec.id ? null : rec.id)}
-                            title="Inspect the AI's reasoning — see Gemini's full justification for this recommendation"
+                            title="Inspect the AI's reasoning — see the AI's full justification for this recommendation"
                             aria-label="Open AI Reasoning Inspector"
                             className="min-h-[44px] min-w-[44px] text-[9px] font-mono font-bold text-indigo-400 hover:text-indigo-300 transition uppercase cursor-pointer flex items-center justify-center gap-1"
                           >

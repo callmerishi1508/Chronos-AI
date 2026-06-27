@@ -154,7 +154,7 @@ export default function PersonalTimeIntelligence({
       primaryArchetype: "Optimistic Builder",
       secondaryArchetype: "Last-Minute Sprinter",
       confidenceScore: 92,
-      geminiReasoning: "Historical telemetry indicates a consistent +63% underestimation on complex milestone deliverables, combined with rapid focus block bursts near active deadline constraints."
+      aiReasoning: "Historical telemetry indicates a consistent +63% underestimation on complex milestone deliverables, combined with rapid focus block bursts near active deadline constraints."
     },
     energyIntelligence: {
       peakPerformanceWindows: "09:00 AM - 12:00 PM (34% faster execution)",
@@ -188,9 +188,9 @@ export default function PersonalTimeIntelligence({
     ],
     futureSelfInsight: {
       insight: "If you continue delaying testing on your database blocks, your probability of deadline failure increases by 24%. Completing your API integration today saves approximately 4.8 hours later.",
-      reasoning: "Early sandbox verification prevents regression propagation across multiple team streams, as supported by Gemini code synthesis diagnostics."
+      reasoning: "Early sandbox verification prevents regression propagation across multiple team streams, as supported by the AI's code synthesis diagnostics."
     },
-    _meta: { provider: "gemini" }
+    _meta: { provider: "GEMINI_FLASH" }
   };
 
   return (
@@ -267,7 +267,7 @@ export default function PersonalTimeIntelligence({
               {onOpenReasoning && (
                 <button
                   onClick={onOpenReasoning}
-                  title="Inspect the AI's reasoning — see Gemini's analysis of your Deadline DNA profile"
+                  title="Inspect the AI's reasoning — see the AI's analysis of your Deadline DNA profile"
                   aria-label="Open AI Reasoning Inspector"
                   className="min-h-[44px] min-w-[44px] px-1.5 py-0.5 bg-indigo-500/10 border border-indigo-500/30 text-[8px] text-indigo-400 font-mono font-bold uppercase rounded cursor-pointer hover:bg-indigo-500/20 transition"
                 >
@@ -308,7 +308,7 @@ export default function PersonalTimeIntelligence({
                 <AIBadge provider={data._meta?.provider} />
               </div>
               <p className="text-sm text-slate-300 leading-relaxed bg-slate-900/50 p-4 rounded-xl border border-slate-700/50">
-                {data.dnaProfile.geminiReasoning}
+                {data.dnaProfile.aiReasoning}
               </p>
             </div>
           </div>
@@ -512,7 +512,7 @@ export default function PersonalTimeIntelligence({
 
           <div className="p-4 bg-slate-950/40 border border-slate-800/60 rounded-2xl">
             <span className="text-[9px] uppercase tracking-widest text-indigo-400 font-bold block mb-1">
-              Gemini Causal Diagnostics
+              AI Causal Diagnostics
             </span>
             <p className="text-xs text-slate-400 font-sans leading-relaxed">
               {data.futureSelfInsight.reasoning}

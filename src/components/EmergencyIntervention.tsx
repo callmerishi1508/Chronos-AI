@@ -362,7 +362,7 @@ export default function EmergencyIntervention({
         {/* CORE INTERVENTION COMMAND SYSTEM CONTROL GRID (Requirement 4) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           
-          {/* LEFT: Highest Leverage Task & Gemini Reasonings (Spans 7) */}
+          {/* LEFT: Highest Leverage Task & AI Reasonings (Spans 7) */}
           <div className="lg:col-span-7 flex flex-col gap-5">
             
             <div className="bg-slate-950 border border-red-500/20 rounded-2xl p-6 relative overflow-hidden flex flex-col gap-5 shadow-2xl">
@@ -419,7 +419,7 @@ export default function EmergencyIntervention({
                     </div>
                   </div>
 
-                  {/* Dynamic Gemini Reasonings (Requirement 6) */}
+                  {/* Dynamic AI Reasonings (Requirement 6) */}
                   <div className="flex flex-col gap-4 mt-1">
                     
                     {/* Why this matters */}

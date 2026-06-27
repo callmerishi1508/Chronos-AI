@@ -1,7 +1,14 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { ShieldAlert, X } from 'lucide-react';
 
-export type AIProvider = 'GEMINI_FLASH' | 'GEMINI_FLASH_LITE' | 'LOCAL_INTELLIGENCE' | 'USER_GEMINI';
+export type AIProvider = 'GEMINI_FLASH' | 'GEMINI_FLASH_LITE' | 'CHRONOS_CORE_INTELLIGENCE' | 'USER_GEMINI';
+
+export const PROVIDER_DISPLAY_NAMES: Record<AIProvider, string> = {
+  GEMINI_FLASH: 'Google Gemini 2.5 Flash',
+  GEMINI_FLASH_LITE: 'Google Gemini 2.5 Flash Lite',
+  CHRONOS_CORE_INTELLIGENCE: 'Chronos Core Intelligence',
+  USER_GEMINI: 'Google Gemini (Session Key)',
+};
 
 interface AIProviderContextType {
   activeProvider: AIProvider;

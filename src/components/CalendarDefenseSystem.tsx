@@ -344,7 +344,7 @@ export default function CalendarDefenseSystem({
                         {onOpenReasoning && (
                           <button
                             onClick={onOpenReasoning}
-                            title="Inspect the AI's reasoning — see how Gemini justified this Focus Shield block"
+                            title="Inspect the AI's reasoning — see how the AI justified this Focus Shield block"
                             aria-label="Open AI Reasoning Inspector"
                             className="min-h-[44px] min-w-[44px] px-1.5 py-0.5 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-[8px] text-indigo-400 font-mono font-black rounded cursor-pointer"
                           >

@@ -55,7 +55,7 @@ export interface Recommendation {
   impact: string;
   reasoning?: ReasoningContext;
   multiFactorScores?: RecommendationFactors;
-  source?: "Gemini AI" | "Chronos Core Intelligence";
+  source?: "Cloud AI" | "Chronos Core Intelligence";
   _meta?: { provider: string };
 }
 
