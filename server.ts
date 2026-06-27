@@ -341,7 +341,7 @@ app.post("/api/prioritize", async (req, res) => {
   };
 
   if (!ai) {
-    return res.json({ prioritization: handleMockPrioritization(), isMock: true });
+    return res.json({ prioritization: handleMockPrioritization(), isMock: true, _meta: { provider: "LOCAL_INTELLIGENCE" } });
   }
 
   try {
@@ -363,10 +363,10 @@ app.post("/api/prioritize", async (req, res) => {
     const { result: response, provider } = await generateContentWithFallback(prompt, { responseMimeType: "application/json" }, req.body.userApiKey);
 
     const parsed = JSON.parse(response.text.trim());
-    res.json({ prioritization: parsed, isMock: false });
+    res.json({ prioritization: parsed, isMock: false, _meta: { provider } });
   } catch (error: any) {
     logGeminiError("Prioritizing tasks", error);
-    res.json({ prioritization: handleMockPrioritization(), isMock: true, error: "AI temporarily unavailable.", localFallbackAvailable: true });
+    res.json({ prioritization: handleMockPrioritization(), isMock: true, _meta: { provider: "LOCAL_INTELLIGENCE" }, error: "Cloud AI temporarily unavailable. Chronos Core Intelligence is now active. You can continue working normally, or connect your own Gemini API key from Settings to restore cloud reasoning.", localFallbackAvailable: true });
   }
 });
 
@@ -499,7 +499,7 @@ app.post("/api/recovery", async (req, res) => {
   };
 
   if (!ai) {
-    return res.json({ recovery: handleMockRecovery(), isMock: true });
+    return res.json({ recovery: handleMockRecovery(), isMock: true, _meta: { provider: "LOCAL_INTELLIGENCE" } });
   }
 
   try {
@@ -552,10 +552,10 @@ app.post("/api/recovery", async (req, res) => {
     const { result: response, provider } = await generateContentWithFallback(prompt, { responseMimeType: "application/json" }, req.body.userApiKey);
 
     const parsed = JSON.parse(response.text.trim());
-    res.json({ recovery: parsed, isMock: false });
+    res.json({ recovery: parsed, isMock: false, _meta: { provider } });
   } catch (error: any) {
     logGeminiError("Deadline recovery metrics", error);
-    res.json({ recovery: handleMockRecovery(), isMock: true, error: "AI temporarily unavailable.", localFallbackAvailable: true });
+    res.json({ recovery: handleMockRecovery(), isMock: true, _meta: { provider: "LOCAL_INTELLIGENCE" }, error: "Cloud AI temporarily unavailable. Chronos Core Intelligence is now active. You can continue working normally, or connect your own Gemini API key from Settings to restore cloud reasoning.", localFallbackAvailable: true });
   }
 });
 
@@ -622,7 +622,7 @@ app.post("/api/narrative", async (req, res) => {
   };
 
   if (!ai) {
-    return res.json({ narrative: handleMockNarrative(), isMock: true });
+    return res.json({ narrative: handleMockNarrative(), isMock: true, _meta: { provider: "LOCAL_INTELLIGENCE" } });
   }
 
   try {
@@ -666,10 +666,10 @@ app.post("/api/narrative", async (req, res) => {
     const { result: response, provider } = await generateContentWithFallback(prompt, { responseMimeType: "application/json" }, req.body.userApiKey);
 
     const parsed = JSON.parse(response.text.trim());
-    res.json({ narrative: parsed, isMock: false });
+    res.json({ narrative: parsed, isMock: false, _meta: { provider } });
   } catch (error: any) {
     logGeminiError("Narrative timeline analysis", error);
-    res.json({ narrative: handleMockNarrative(), isMock: true, error: "AI temporarily unavailable.", localFallbackAvailable: true });
+    res.json({ narrative: handleMockNarrative(), isMock: true, _meta: { provider: "LOCAL_INTELLIGENCE" }, error: "Cloud AI temporarily unavailable. Chronos Core Intelligence is now active. You can continue working normally, or connect your own Gemini API key from Settings to restore cloud reasoning.", localFallbackAvailable: true });
   }
 });
 
@@ -733,7 +733,7 @@ app.post("/api/bias-analysis", async (req, res) => {
   };
 
   if (!ai) {
-    return res.json({ analysis: handleMockBiasAnalysis(), isMock: true });
+    return res.json({ analysis: handleMockBiasAnalysis(), isMock: true, _meta: { provider: "LOCAL_INTELLIGENCE" } });
   }
 
   try {
@@ -777,10 +777,10 @@ app.post("/api/bias-analysis", async (req, res) => {
     const { result: response, provider } = await generateContentWithFallback(prompt, { responseMimeType: "application/json" }, req.body.userApiKey);
 
     const parsed = JSON.parse(response.text.trim());
-    res.json({ analysis: parsed, isMock: false });
+    res.json({ analysis: parsed, isMock: false, _meta: { provider } });
   } catch (error: any) {
     logGeminiError("Cognitive bias analysis", error);
-    res.json({ analysis: handleMockBiasAnalysis(), isMock: true, error: "AI temporarily unavailable.", localFallbackAvailable: true });
+    res.json({ analysis: handleMockBiasAnalysis(), isMock: true, _meta: { provider: "LOCAL_INTELLIGENCE" }, error: "Cloud AI temporarily unavailable. Chronos Core Intelligence is now active. You can continue working normally, or connect your own Gemini API key from Settings to restore cloud reasoning.", localFallbackAvailable: true });
   }
 });
 
@@ -855,7 +855,7 @@ app.post("/api/personal-intelligence", async (req, res) => {
   };
 
   if (!ai) {
-    return res.json({ profile: handleMockPersonalIntelligence(), isMock: true });
+    return res.json({ profile: handleMockPersonalIntelligence(), isMock: true, _meta: { provider: "LOCAL_INTELLIGENCE" } });
   }
 
   try {
@@ -926,10 +926,10 @@ app.post("/api/personal-intelligence", async (req, res) => {
     const { result: response, provider } = await generateContentWithFallback(prompt, { responseMimeType: "application/json" }, req.body.userApiKey);
 
     const parsed = JSON.parse(response.text.trim());
-    res.json({ profile: parsed, isMock: false });
+    res.json({ profile: parsed, isMock: false, _meta: { provider } });
   } catch (error: any) {
     logGeminiError("Personal Intelligence Diagnostic", error);
-    res.json({ profile: handleMockPersonalIntelligence(), isMock: true, error: "AI temporarily unavailable.", localFallbackAvailable: true });
+    res.json({ profile: handleMockPersonalIntelligence(), isMock: true, _meta: { provider: "LOCAL_INTELLIGENCE" }, error: "Cloud AI temporarily unavailable. Chronos Core Intelligence is now active. You can continue working normally, or connect your own Gemini API key from Settings to restore cloud reasoning.", localFallbackAvailable: true });
   }
 });
 
@@ -990,7 +990,7 @@ app.post("/api/reasoning", async (req, res) => {
   };
 
   if (!ai) {
-    return res.json({ reasoning: handleMockReasoning(), isMock: true });
+    return res.json({ reasoning: handleMockReasoning(), isMock: true, _meta: { provider: "LOCAL_INTELLIGENCE" } });
   }
 
   try {
@@ -1052,10 +1052,10 @@ app.post("/api/reasoning", async (req, res) => {
     const { result: response, provider } = await generateContentWithFallback(prompt, { responseMimeType: "application/json" }, req.body.userApiKey);
 
     const parsed = JSON.parse(response.text.trim());
-    res.json({ reasoning: parsed, isMock: false });
+    res.json({ reasoning: parsed, isMock: false, _meta: { provider } });
   } catch (error: any) {
     logGeminiError("Reasoning diagnostic", error);
-    res.json({ reasoning: handleMockReasoning(), isMock: true, error: "AI temporarily unavailable.", localFallbackAvailable: true });
+    res.json({ reasoning: handleMockReasoning(), isMock: true, _meta: { provider: "LOCAL_INTELLIGENCE" }, error: "Cloud AI temporarily unavailable. Chronos Core Intelligence is now active. You can continue working normally, or connect your own Gemini API key from Settings to restore cloud reasoning.", localFallbackAvailable: true });
   }
 });
 
@@ -1109,7 +1109,7 @@ app.post("/api/intervention", async (req, res) => {
   };
 
   if (!ai) {
-    return res.json({ protocol: handleMockIntervention(), isMock: true });
+    return res.json({ protocol: handleMockIntervention(), isMock: true, _meta: { provider: "LOCAL_INTELLIGENCE" } });
   }
 
   try {
@@ -1146,10 +1146,10 @@ app.post("/api/intervention", async (req, res) => {
     const { result: response, provider } = await generateContentWithFallback(prompt, { responseMimeType: "application/json" }, req.body.userApiKey);
 
     const parsed = JSON.parse(response.text.trim());
-    res.json({ protocol: parsed, isMock: false });
+    res.json({ protocol: parsed, isMock: false, _meta: { provider } });
   } catch (error: any) {
     logGeminiError("Crisis intervention protocol", error);
-    res.json({ protocol: handleMockIntervention(), isMock: true, error: "AI temporarily unavailable.", localFallbackAvailable: true });
+    res.json({ protocol: handleMockIntervention(), isMock: true, _meta: { provider: "LOCAL_INTELLIGENCE" }, error: "Cloud AI temporarily unavailable. Chronos Core Intelligence is now active. You can continue working normally, or connect your own Gemini API key from Settings to restore cloud reasoning.", localFallbackAvailable: true });
   }
 });
 
@@ -1185,7 +1185,7 @@ app.post("/api/schedule", async (req, res) => {
   };
 
   if (!ai) {
-    return res.json({ scheduledBlocks: handleMockSchedule(), isMock: true });
+    return res.json({ scheduledBlocks: handleMockSchedule(), isMock: true, _meta: { provider: "LOCAL_INTELLIGENCE" } });
   }
 
   try {
@@ -1212,10 +1212,10 @@ app.post("/api/schedule", async (req, res) => {
     const { result: response, provider } = await generateContentWithFallback(prompt, { responseMimeType: "application/json" }, req.body.userApiKey);
 
     const parsed = JSON.parse(response.text.trim());
-    res.json({ scheduledBlocks: parsed.scheduledBlocks, isMock: false });
+    res.json({ scheduledBlocks: parsed.scheduledBlocks, isMock: false, _meta: { provider } });
   } catch (error: any) {
     logGeminiError("Dynamic scheduling engine", error);
-    res.json({ scheduledBlocks: handleMockSchedule(), isMock: true, error: "AI temporarily unavailable.", localFallbackAvailable: true });
+    res.json({ scheduledBlocks: handleMockSchedule(), isMock: true, _meta: { provider: "LOCAL_INTELLIGENCE" }, error: "Cloud AI temporarily unavailable. Chronos Core Intelligence is now active. You can continue working normally, or connect your own Gemini API key from Settings to restore cloud reasoning.", localFallbackAvailable: true });
   }
 });
 
@@ -1245,7 +1245,7 @@ app.post("/api/plan-task", async (req, res) => {
 
   if (!ai) {
     const mockData = handleMockPlanTask();
-    return res.json({ ...mockData, isMock: true });
+    return res.json({ ...mockData, isMock: true, _meta: { provider: "LOCAL_INTELLIGENCE" } });
   }
 
   try {
@@ -1270,11 +1270,11 @@ app.post("/api/plan-task", async (req, res) => {
     const { result: response, provider } = await generateContentWithFallback(prompt, { responseMimeType: "application/json" }, req.body.userApiKey);
 
     const parsed = JSON.parse(response.text.trim());
-    res.json({ ...parsed, isMock: false });
+    res.json({ ...parsed, isMock: false, _meta: { provider } });
   } catch (error: any) {
     logGeminiError("Autonomous goal planning", error);
     const mockData = handleMockPlanTask();
-    res.json({ ...mockData, isMock: true, error: "AI temporarily unavailable.", localFallbackAvailable: true });
+    res.json({ ...mockData, isMock: true, _meta: { provider: "LOCAL_INTELLIGENCE" }, error: "Cloud AI temporarily unavailable. Chronos Core Intelligence is now active. You can continue working normally, or connect your own Gemini API key from Settings to restore cloud reasoning.", localFallbackAvailable: true });
   }
 });
 
@@ -1358,7 +1358,7 @@ app.post("/api/recommendations", async (req, res) => {
 
   if (!ai) {
     const mockData = handleMockRecommendations();
-    return res.json({ ...mockData, isMock: true });
+    return res.json({ ...mockData, isMock: true, _meta: { provider: "LOCAL_INTELLIGENCE" } });
   }
 
   try {
@@ -1384,11 +1384,11 @@ app.post("/api/recommendations", async (req, res) => {
     const { result: response, provider } = await generateContentWithFallback(prompt, { responseMimeType: "application/json" }, req.body.userApiKey);
 
     const parsed = JSON.parse(response.text.trim());
-    res.json({ ...parsed, isMock: false });
+    res.json({ ...parsed, isMock: false, _meta: { provider } });
   } catch (error: any) {
     logGeminiError("Personalized insights", error);
     const mockData = handleMockRecommendations();
-    res.json({ ...mockData, isMock: true, error: "AI temporarily unavailable.", localFallbackAvailable: true });
+    res.json({ ...mockData, isMock: true, _meta: { provider: "LOCAL_INTELLIGENCE" }, error: "Cloud AI temporarily unavailable. Chronos Core Intelligence is now active. You can continue working normally, or connect your own Gemini API key from Settings to restore cloud reasoning.", localFallbackAvailable: true });
   }
 });
 
@@ -1412,7 +1412,7 @@ app.post("/api/chat", async (req, res) => {
   };
 
   if (!ai) {
-    return res.json({ response: handleMockChat(), isMock: true });
+    return res.json({ response: handleMockChat(), isMock: true, _meta: { provider: "LOCAL_INTELLIGENCE" } });
   }
 
   try {
@@ -1424,10 +1424,10 @@ app.post("/api/chat", async (req, res) => {
 
     const { result: response, provider } = await generateContentWithFallback(prompt, { responseMimeType: "application/json" }, req.body.userApiKey);
 
-    res.json({ response: response.text, isMock: false });
+    res.json({ response: response.text, isMock: false, _meta: { provider } });
   } catch (error: any) {
     logGeminiError("Interactive chat companion", error);
-    res.json({ response: handleMockChat(), isMock: true, error: "AI temporarily unavailable.", localFallbackAvailable: true });
+    res.json({ response: handleMockChat(), isMock: true, _meta: { provider: "LOCAL_INTELLIGENCE" }, error: "Cloud AI temporarily unavailable. Chronos Core Intelligence is now active. You can continue working normally, or connect your own Gemini API key from Settings to restore cloud reasoning.", localFallbackAvailable: true });
   }
 });
 
@@ -1448,7 +1448,7 @@ app.post("/api/voice-process", async (req, res) => {
 
   if (!ai) {
     const mockData = handleMockVoiceProcess();
-    return res.json({ ...mockData, isMock: true });
+    return res.json({ ...mockData, isMock: true, _meta: { provider: "LOCAL_INTELLIGENCE" } });
   }
 
   try {
@@ -1469,11 +1469,11 @@ app.post("/api/voice-process", async (req, res) => {
     const { result: response, provider } = await generateContentWithFallback(prompt, { responseMimeType: "application/json" }, req.body.userApiKey);
 
     const parsed = JSON.parse(response.text.trim());
-    res.json({ ...parsed, isMock: false });
+    res.json({ ...parsed, isMock: false, _meta: { provider } });
   } catch (error: any) {
     logGeminiError("Simulated voice analysis", error);
     const mockData = handleMockVoiceProcess();
-    res.json({ ...mockData, isMock: true, error: "AI temporarily unavailable.", localFallbackAvailable: true });
+    res.json({ ...mockData, isMock: true, _meta: { provider: "LOCAL_INTELLIGENCE" }, error: "Cloud AI temporarily unavailable. Chronos Core Intelligence is now active. You can continue working normally, or connect your own Gemini API key from Settings to restore cloud reasoning.", localFallbackAvailable: true });
   }
 });
 

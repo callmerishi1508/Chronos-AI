@@ -210,7 +210,7 @@ function handleLocalFallback(endpoint: string, payload: any, diagnostics: any) {
       recommendations: [
         {
           id: "local-fallback",
-          title: "Offline Local Intelligence",
+          title: "Offline Chronos Core Intelligence",
           type: "immediate",
           description: "Network offline or API limits reached. Proceed manually with your highest priority task.",
           impact: "Maintains momentum without AI.",
@@ -229,7 +229,7 @@ function handleLocalFallback(endpoint: string, payload: any, diagnostics: any) {
             explanation: "Running offline."
           },
           multiFactorScores: { urgency: 50, impact: 50, effort: 50, dependency: 0, energyMatch: 50, timeFit: 50, risk: 50 },
-          source: "Chronos Local Intelligence"
+          source: "Chronos Core Intelligence"
         }
       ]
     };
@@ -291,7 +291,7 @@ function handleLocalFallback(endpoint: string, payload: any, diagnostics: any) {
   }
 
   // Fallback for everything else
-  return { ...meta, success: true, isLocalFallback: true, message: "Operating in Local Intelligence Mode." };
+  return { ...meta, success: true, isLocalFallback: true, message: "Operating in Chronos Core Intelligence Mode." };
 }
 
 export function clearAICache() {

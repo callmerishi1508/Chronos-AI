@@ -70,7 +70,7 @@ export default function PersonalTimeIntelligence({
         peakEnergyWindow: "09:00 - 11:30 AM",
         chronotype: "Lark",
         burnoutRisk: 45,
-        aiDiagnosis: "📡 GEMINI AI UNAVAILABLE: Running Chronos Local Intelligence (heuristic fallback). Based on local rule-based models, you must shield your morning hours from administrative tasks to maximize your high-velocity deep work window.",
+        aiDiagnosis: "Cloud AI temporarily unavailable. Chronos Core Intelligence is now active. Based on local rule-based models, you must shield your morning hours from administrative tasks to maximize your high-velocity deep work window.",
         _meta: { provider: "local" }
       });
     } finally {
